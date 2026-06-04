@@ -1,0 +1,33 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: DIP Refactoring Test
+      id: dip-refactoring-test
+      uses: classroom-resources/autograding-io-grader@v1
+      with:
+        test-name: DIP Refactoring Test
+        setup-command: mkdir -p out && javac -d out *.java
+        command: java -cp out Main
+        input: ''
+        expected-output: "✅ [Success]"
+        comparison-method: contains
+        timeout: 10
+        max-score: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        DIP-REFACTORING-TEST_RESULTS: "${{steps.dip-refactoring-test.outputs.result}}"
+      with:
+        runners: dip-refactoring-test
